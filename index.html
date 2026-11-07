@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#d985a8">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Mis ventas">
+<title>Mis ventas</title>
+<style>
+:root{--bg:#fff6f8;--ink:#493640;--muted:#9a7f8b;--purple:#d879a0;--line:#f2dce5;--white:#fff;--green:#548b70}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 95% 18%,#fde8ef 0,transparent 25%),var(--bg);color:var(--ink);font:16px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button,input,select{ -webkit-tap-highlight-color:transparent }button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #f2bfd2;outline-offset:2px}
+header{background:linear-gradient(135deg,#eaa4bd,#d985a8);color:white;padding:25px 20px 24px;border-radius:0 0 28px 28px;box-shadow:0 8px 24px #d985a82b}
+.top{display:flex;justify-content:space-between;align-items:center}.eyebrow{font-size:12px;color:#fff0f5;letter-spacing:1.3px;text-transform:uppercase}
+h1{font-size:25px;margin:5px 0 0}.date{font-size:12px;color:#fff0f5}
+main{max-width:620px;margin:auto;padding:18px 16px 100px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:-2px}
+.stat,.panel,.product{background:white;border:1px solid var(--line);border-radius:17px;padding:16px}
+.stat small{color:var(--muted);font-size:12px}.stat strong{display:block;font-size:23px;margin-top:7px}
+.panel{margin-top:15px}.panel h2{font-size:17px;margin:0 0 14px}
+.products{display:grid;gap:10px}
+.product{display:flex;align-items:center;gap:12px;padding:12px}
+.emoji{width:43px;height:43px;border-radius:13px;background:#f0edff;display:grid;place-items:center;font-size:22px}
+.pinfo{flex:1}.pinfo b{display:block;font-size:14px}.pinfo small{color:var(--muted)}
+.stepper{display:flex;align-items:center;gap:10px}.stepper button{border:0;background:#fff0f5;color:#bd648b;width:36px;height:36px;border-radius:12px;font-size:22px;font-weight:600}.add-product{border:1px solid #edc5d6;background:#fff4f8;color:#b85d83;border-radius:11px;padding:9px 13px;font-weight:700;font-size:13px;white-space:nowrap}
+.qty{min-width:14px;text-align:center;font-weight:700}
+label{display:block;font-size:12px;color:var(--muted);margin:13px 0 6px}
+input,select{width:100%;border:1px solid var(--line);border-radius:11px;padding:12px;background:#fff;color:var(--ink);font:inherit}
+.total{display:flex;justify-content:space-between;align-items:center;padding:16px 2px 8px}.total span{color:var(--muted)}.total strong{font-size:25px}
+.primary{width:100%;border:0;border-radius:13px;background:linear-gradient(135deg,#df8eaf,#cc6f98);color:white;box-shadow:0 5px 14px #d985a83b;padding:15px;font-weight:700;font-size:15px}
+.secondary{border:1px solid var(--line);background:#fff;border-radius:10px;padding:9px 12px;color:var(--ink)}
+.tabs{display:flex;gap:8px;margin:16px 0}.tab{flex:1;padding:11px 6px;border:1px solid var(--line);border-radius:11px;background:white;color:var(--muted);font-weight:600}.tab.active{background:#fbe2ec;color:#a94e77;border-color:#efc4d6}
+.sale{padding:12px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:10px}.sale:last-child{border:0}.sale small{display:block;color:var(--muted);margin-top:4px}.sale strong{white-space:nowrap}
+.empty{text-align:center;color:var(--muted);padding:22px 8px;font-size:14px}
+.hidden{display:none!important}.green{color:var(--green)}
+footer{text-align:center;color:var(--muted);font-size:11px;margin:20px 0}
+</style>
+</head>
+<body>
+<header><div class="top"><div><div class="eyebrow">Control de ventas</div><h1>Mis ventas ✨</h1></div><div class="date" id="today"></div></div></header>
+<main>
+<div class="stats">
+ <div class="stat"><small>Ingresos de hoy</small><strong id="todayTotal">$0</strong></div>
+ <div class="stat"><small>Ventas de hoy</small><strong id="todayCount">0</strong></div>
+</div>
+<div class="tabs"><button class="tab active" data-tab="new">Nueva venta</button><button class="tab" data-tab="history">Historial</button><button class="tab" data-tab="stats">Estadísticas</button></div>
+<section id="new">
+ <div class="panel"><h2>Agregar productos</h2><div class="products" id="products"></div>
+ <label for="payment">Método de pago</label><select id="payment"><option>Efectivo</option><option>Transferencia</option><option>Mercado Pago</option></select>
+ <label for="note">Nota (opcional)</label><input id="note" placeholder="Ej. Venta en feria">
+ <div class="total"><span>Total de la venta</span><strong id="cartTotal">$0</strong></div>
+ <button class="primary" id="save">Registrar venta</button>
+ </div>
+</section>
+<section id="history" class="hidden"><div class="panel"><h2>Últimas ventas</h2><div id="salesList"></div><button class="secondary" id="export">Exportar CSV</button></div></section>
+<section id="stats" class="hidden"><div class="panel"><h2>Resumen del mes</h2><div class="stats"><div class="stat"><small>Ingresos del mes</small><strong id="monthTotal">$0</strong></div><div class="stat"><small>Ventas del mes</small><strong id="monthCount">0</strong></div></div><h2 style="margin-top:20px">Unidades vendidas</h2><div id="units"></div></div></section>
+<footer>Los datos se guardan en este dispositivo. Exportá una copia de seguridad periódicamente.</footer>
+</main>
+<script>
+const items=[{id:'sticker',name:'Sticker',price:800,emoji:'🌈'},{id:'pompon',name:'Señalador con pompón',price:1500,emoji:'🧶'},{id:'simple',name:'Señalador simple',price:1000,emoji:'🔖'}];
+let cart={sticker:0,pompon:0,simple:0};
+let sales=JSON.parse(localStorage.getItem('misVentasV1')||'[]');
+const money=n=>new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS',maximumFractionDigits:0}).format(n);
+const dateKey=d=>{let x=new Date(d);return `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}-${String(x.getDate()).padStart(2,'0')}`};
+const today=dateKey(new Date());
+document.getElementById('today').textContent=new Date().toLocaleDateString('es-AR',{weekday:'short',day:'numeric',month:'short'});
+function renderProducts(){document.getElementById('products').innerHTML=items.map(p=>`<div class="product"><div class="emoji">${p.emoji}</div><div class="pinfo"><b>${p.name}</b><small>${money(p.price)} c/u</small></div>${cart[p.id]===0?`<button class="add-product" onclick="change('${p.id}',1)">＋ Agregar</button>`:`<div class="stepper"><button aria-label="Quitar ${p.name}" onclick="change('${p.id}',-1)">−</button><span class="qty" id="q-${p.id}">${cart[p.id]}</span><button aria-label="Agregar ${p.name}" onclick="change('${p.id}',1)">＋</button></div>`}</div>`).join('');updateTotal()}
+function change(id,n){cart[id]=Math.max(0,cart[id]+n);renderProducts()}
+function amount(c){return items.reduce((s,p)=>s+c[p.id]*p.price,0)}
+function updateTotal(){document.getElementById('cartTotal').textContent=money(amount(cart))}
+function persist(){localStorage.setItem('misVentasV1',JSON.stringify(sales));render()}
+function render(){let td=sales.filter(s=>s.day===today);document.getElementById('todayTotal').textContent=money(td.reduce((a,s)=>a+s.total,0));document.getElementById('todayCount').textContent=td.length;
+let now=new Date(),month=sales.filter(s=>{let d=new Date(s.date);return d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth()});document.getElementById('monthTotal').textContent=money(month.reduce((a,s)=>a+s.total,0));document.getElementById('monthCount').textContent=month.length;
+document.getElementById('salesList').innerHTML=sales.length?sales.slice().reverse().map(s=>`<div class="sale"><div><b>${s.items.map(i=>`${i.qty} ${i.name}`).join(' · ')}</b><small>${new Date(s.date).toLocaleString('es-AR')} · ${s.payment}${s.note?' · '+escapeHtml(s.note):''}</small></div><strong>${money(s.total)}</strong></div>`).join(''):'<div class="empty">Todavía no registraste ventas.</div>';
+let counts={sticker:0,pompon:0,simple:0};month.forEach(s=>s.items.forEach(i=>counts[i.id]+=i.qty));document.getElementById('units').innerHTML=items.map(p=>`<div class="sale"><span>${p.name}</span><strong>${counts[p.id]} unidades</strong></div>`).join('')}
+function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+document.getElementById('save').onclick=()=>{let chosen=items.filter(p=>cart[p.id]>0).map(p=>({id:p.id,name:p.name,qty:cart[p.id],unit:p.price}));if(!chosen.length){alert('Agregá al menos un producto.');return}let date=new Date();sales.push({date:date.toISOString(),day:dateKey(date),items:chosen,total:amount(cart),payment:document.getElementById('payment').value,note:document.getElementById('note').value.trim()});cart={sticker:0,pompon:0,simple:0};document.getElementById('note').value='';renderProducts();persist();alert('¡Venta registrada!')};
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===b));['new','history','stats'].forEach(id=>document.getElementById(id).classList.toggle('hidden',id!==b.dataset.tab));render()});
+document.getElementById('export').onclick=()=>{let rows=[['Fecha','Productos','Total','Pago','Nota'],...sales.map(s=>[new Date(s.date).toLocaleString('es-AR'),s.items.map(i=>`${i.qty} ${i.name}`).join('; '),s.total,s.payment,s.note])];let csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(';')).join('\n');let a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}));a.download='mis-ventas.csv';a.click();URL.revokeObjectURL(a.href)};
+renderProducts();render();
+</script>
+</body></html>
